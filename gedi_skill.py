@@ -132,14 +132,17 @@ class GediSkill:
         output = self.model(text_ids_tensor, labels=text_ids_tensor)
         return float(np.exp(np.average(output[0].cpu().detach().numpy())))  # loss
 
-    def generate_one_sentence_skill(self, data):
+    def generate_one_sentence_skill(self, data, disc_weight = 1):
         """
         Generate one sentence based on input data.
+        :param disc_weight: Multiplier of Control strength (from the discriminator). Default: 1.
         :param data: dict that contains "sentence' and "topic" key.
         :return: Generated text, in Ray-API compatible format.
         """
         # Repack the data
-        result = self.generate_one_sentence(data['sentence'], data['topic'])
+        # Apply discriminator weight as multiplier on default control strength parameters.
+        result = self.generate_one_sentence(data['sentence'], data['topic'],
+                                            extra_args={'disc_weight':disc_weight * self.disc_weight})
         return {
             "in_sentence": data['sentence'],
             "in_topic": data["topic"],
